@@ -1,0 +1,45 @@
+﻿# GitHub Actions Workflow to build the Android APK
+name: Android CI Build
+
+on:
+ push:
+   branches:
+     - main
+     - develop
+ pull_request:
+   branches:
+     - main
+     - develop
+
+jobs:
+ build:
+   runs-on: ubuntu-latest # Use a fresh Ubuntu environment for each job
+
+   steps:
+   - name: Checkout Repository
+     uses: actions/checkout@v4 # Action to checkout your repository code
+
+   - name: Set up JDK 17
+     uses: actions/setup-java@v4 # Action to set up Java Development Kit
+     with:
+       distribution: 'temurin' # Recommended distribution for GitHub Actions
+       java-version: '17' # Android development often uses JDK 11 or 17
+
+   - name: Grant execute permission for gradlew
+     run: chmod +x gradlew # Ensures the Gradle wrapper script is executable
+
+   - name: Build Debug APK
+     run: ./gradlew assembleDebug # Executes the Gradle build command for a debug APK
+     # If your project uses different build variants, adjust this command accordingly
+     # For example: ./gradlew assembleRelease for a release build (requires signing setup)
+
+   - name: Upload APK as Artifact
+     uses: actions/upload-artifact@v4 # Action to upload build artifacts
+     with:
+       name: app-debug-apk # Name of the artifact
+       path: app/build/outputs/apk/debug/app-debug.apk # Path to the generated APK file
+       # Adjust this path if your build output directory is different
+
+   - name: List Contents of Build Output (for debugging)
+     run: ls -R app/build/outputs/apk/
+     # This step is optional but helpful for debugging if the artifact path is incorrect
